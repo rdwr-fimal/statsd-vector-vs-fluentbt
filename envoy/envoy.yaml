@@ -7,9 +7,14 @@ admin:
 stats_sinks:
   - name: envoy.statsd
     typed_config:
-      "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink
+      "@type": type.googleapis.com/envoy.extensions.stat_sinks.open_telemetry.v3.SinkConfig
       prefix: envoy.statsd.metrics
-      tcp_cluster_name: statsd_tcp_cluster
+      report_counters_as_deltas: true
+      report_histograms_as_deltas: true
+      use_tag_extracted_name: true
+      grpc_service: 
+        envoy_grpc:
+          cluster_name: statsd-otel-collector
 stats_flush_interval: 3s
 static_resources:
   listeners:
@@ -102,16 +107,16 @@ static_resources:
                 socket_address:
                   address: ${SERVICE_NAME}
                   port_value: ${SERVICE_PORT}
-    - name: statsd_tcp_cluster
+    - name: statsd-otel-collector
       connect_timeout: 1s
-      type: STRICT_DNS
-      lb_policy: ROUND_ROBIN
+      type: strict_dns
+      http2_protocol_options: {}   # Required for gRPC
       load_assignment:
-        cluster_name: statsd_tcp_cluster
+        cluster_name: statsd-otel-collector
         endpoints:
-        - lb_endpoints:
-          - endpoint:
-              address:
-                socket_address:
-                  address: ${LOG_PROCESSOR_IP}
-                  port_value: 9125
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address:  ${LOG_PROCESSOR_IP}  # Replace with your actual OTEL endpoint
+                      port_value: 9125

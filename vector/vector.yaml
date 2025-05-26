@@ -8,14 +8,19 @@ sources:
   #   scrape_interval_secs: 3
   #   scrape_timeout_secs: 5
   statsd:
-    type: "statsd"
-    address: "0.0.0.0:9125"
-    mode: "tcp"
-    sanitize: false
+    type: opentelemetry
+    grpc:
+      address: 0.0.0.0:9125
+    http:
+      address: 0.0.0.0:9126
+      headers: []
+      keepalive:
+        max_connection_age_jitter_factor: 0.1
+        max_connection_age_secs: 300
 transforms:
   enforcer_filter:
     type: filter
-    inputs: [statsd]
+    inputs: [statsd.metrics]
     condition: contains(string!(.name),"downstream_rq_total") == true
       # type: vrl
       # source: match!(.name, r'.*.downstream_rq_total')
@@ -31,15 +36,14 @@ transforms:
       if !contains(string!(.name), "downstream_rq_total") {
         abort;
       }
-      #set logtype
+      # set logtype
       .logtype = "Metric";
-      .metric = .name;
-      del(.name);
+      .metric = del(.name);
       .value = .counter.value;
       del(.counter)
-      .fluentbit_ts = .timestamp;
-      del(.timestamp)
+      .fluentbit_ts = del(.timestamp);
       del(.kind)
+      del(.tags)
 sinks:
   out:
     type: "blackhole"

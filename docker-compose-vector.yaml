@@ -31,7 +31,7 @@ services:
     ports:
       - "9090:80"
   vector:
-    image: timberio/vector:0.43.0-debian
+    image: timberio/vector:0.47.0-debian
     container_name: vector
     networks:
       - envoynet
@@ -45,7 +45,7 @@ services:
           cpus: "1.0"
           memory: 200M
   k6:
-    image: grafana/k6
+    image: grafana/k6:latest
     entrypoint: /bin/sh
     container_name: k6
     networks:
