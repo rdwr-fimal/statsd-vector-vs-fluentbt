@@ -10,9 +10,9 @@ sources:
   statsd:
     type: opentelemetry
     grpc:
-      address: 0.0.0.0:9125
+      address: 0.0.0.0:8125
     http:
-      address: 0.0.0.0:9126
+      address: 0.0.0.0:8126
       headers: []
       keepalive:
         max_connection_age_jitter_factor: 0.1
@@ -45,16 +45,16 @@ transforms:
       del(.kind)
       del(.tags)
 sinks:
-  out:
-    type: "blackhole"
-    inputs: ["license_metering"]
-  # print:
-  #   type: "console"
+  # out:
+  #   type: "blackhole"
   #   inputs: ["license_metering"]
-  #   encoding:
-  #     codec: "json"
-  #     json:
-  #       pretty: true
+  print:
+    type: "console"
+    inputs: ["license_metering"]
+    encoding:
+      codec: "json"
+      json:
+        pretty: true
   promethues_metrics:
     type: "prometheus_exporter"
     inputs: ["vector_metrics"]

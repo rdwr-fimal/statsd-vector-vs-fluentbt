@@ -11,10 +11,10 @@ stats_sinks:
       prefix: envoy.statsd.metrics
       report_counters_as_deltas: true
       report_histograms_as_deltas: true
-      use_tag_extracted_name: true
+      use_tag_extracted_name: false
       grpc_service: 
         envoy_grpc:
-          cluster_name: statsd-otel-collector
+          cluster_name: waas_statsd
 stats_flush_interval: 3s
 static_resources:
   listeners:
@@ -107,16 +107,17 @@ static_resources:
                 socket_address:
                   address: ${SERVICE_NAME}
                   port_value: ${SERVICE_PORT}
-    - name: statsd-otel-collector
+    - name: waas_statsd
       connect_timeout: 1s
-      type: strict_dns
+      type: STATIC
+      lb_policy: ROUND_ROBIN
       http2_protocol_options: {}   # Required for gRPC
       load_assignment:
-        cluster_name: statsd-otel-collector
+        cluster_name: waas_statsd
         endpoints:
           - lb_endpoints:
               - endpoint:
                   address:
                     socket_address:
                       address:  ${LOG_PROCESSOR_IP}  # Replace with your actual OTEL endpoint
-                      port_value: 9125
+                      port_value: 8125
